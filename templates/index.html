@@ -1,14 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>My Pictures</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Hosting Service</title>
+  <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-    <h1>Picture service</h1>
-    <ul>
-        <li><a href="/upload">Picture upload</a></li>
-        <li><a href="/images">View picture</a></li>
-    </ul>
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="container">
+      <h2 class="logo">ImageHost</h2>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/upload">Picture upload</a></li>
+          <li><a href="/images">View picture</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1>Welcome to our image hosting service!</h1>
+        <p>
+          Here, you can easily upload your favorite photos in popular formats like <strong>.jpg</strong>, <strong>.png</strong>, and <strong>.gif</strong>.<br><br>
+          Your images are securely stored, and you’ll instantly receive a direct link to each uploaded file — perfect for sharing or embedding anywhere.<br><br>
+          Fast, reliable, and user-friendly — start uploading now!
+        </p>
+        <a href="/upload" class="btn">Get Started</a>
+      </div>
+      <div class="hero-image">
+        <img src="/static/assets/hero02.png" alt="Illustration showing image upload" />
+      </div>
+    </div>
+  </section>
 </body>
 </html>
