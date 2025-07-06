@@ -1,3 +1,4 @@
+import logging
 import os
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
@@ -21,6 +22,22 @@ templates = Jinja2Templates(directory=TEMPLATES_PATH)
 
 # Mount static files (assets, css,etc.)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+log_dir = Path("logs")
+log_dir.mkdir(exist_ok=True)
+log_file = log_dir / "app.log"
+
+# Logging-Configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.FileHandler(log_file, encoding="utf-8"),
+        logging.StreamHandler()
+    ]
+)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
@@ -54,16 +71,29 @@ async def upload_img(request:Request, file:UploadFile = File(...)):
 
     """
     file_name = Path(file.filename)
-    print(f"File received {file_name}")
-    content = await file_validation(file, ALLOWED_EXTENSIONS)
+    logging.info(f"File received: {file_name}")
+    try:
+        content = await file_validation(file, ALLOWED_EXTENSIONS)
+    except HTTPException as e:
+        logging.error(f"Upload failed for {file_name}: {e.detail}")
+        return templates.TemplateResponse(
+            "error.html",
+            {
+                "request": request,
+                "message": e.detail
+            },
+            status_code=e.status_code
+        )
+
     new_file_name = get_unique_name(file_name)
+
     print(new_file_name)
 
     image_dir = Path(IMAGES_PATH)
     image_dir.mkdir(exist_ok=True)
     save_path = image_dir / new_file_name
     save_path.write_bytes(content)
-    print(f"File {str(save_path)}")
+    logging.info(f"File saved as: {save_path}")
     return {'message': f'File {file.filename} received. Saved as {save_path}'}
 
 
