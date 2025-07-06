@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Pictures</title>
+</head>
+<body>
+    <h1>Upload picture</h1>
+    <ul>
+        <li><a href="/upload">Picture upload</a></li>
+        <li><a href="/images">View picture</a></li>
+    </ul>
+
+<form action="/upload/" enctype="multipart/form-data" method="post">
+    <input type="file" name="file" accept="jpg, jpeg, gif, png" required>
+    <br>
+    <input type="submit" value="Upload">
+</form>
+</body>
+</html>
