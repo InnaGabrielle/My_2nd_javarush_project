@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uploaded Images</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h2>Uploaded Images</h2>
+    <ul>
+        {% for file in images %}
+        <li><a href="/images/{{ file }}" target="_blank">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+    <a href="/" class="back-button">← Back to Home</a>
+</body>
+</html>
