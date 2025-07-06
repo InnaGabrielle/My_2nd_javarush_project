@@ -51,12 +51,11 @@ async def file_validation(file: UploadFile, allowed_extensions: list, max_file_s
     if not is_allowed_file(file_name, allowed_extensions):
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file extension for '{file.name}'. "
+            detail=f"Invalid file extension for '{file.filename}'. "
                    f"Allowed extensions: {', '.join(allowed_extensions)}"
         )
     else:
         print("Valid extension")
-
     content = await file.read(max_file_size + 1)
     if len(content) > max_file_size:
         raise HTTPException(
