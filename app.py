@@ -121,6 +121,7 @@ async def serve_image(file_name: str):
     """
     file_path = Path(IMAGES_PATH) / file_name
     if not file_path.exists():
+        logging.warning(f"Image not found: {file_name}")
         raise HTTPException(status_code=404, detail="Image not found")
 
     return FileResponse(file_path, media_type="image/jpeg")
