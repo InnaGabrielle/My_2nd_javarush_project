@@ -1,11 +1,6 @@
-import os
 from pathlib import Path
 import uuid
-
 from fastapi import HTTPException, UploadFile
-
-#MAX_FILE_SIZE = 5 * 1024 * 1024 # 5Mb
-
 
 
 def is_allowed_file(filename: Path, allowed_extensions: list) -> bool:
@@ -68,6 +63,9 @@ async def file_validation(file: UploadFile, allowed_extensions: list, max_file_s
             status_code=413,
             detail=f"File too large – limit is {max_file_size // (1024 * 1024)} MB"
         )
+    else:
+        print("Valid file size")
+
     file.file.seek(0)
     return content
 
