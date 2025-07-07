@@ -39,6 +39,17 @@ logging.basicConfig(
     ]
 )
 
+
+@app.get("/favicon.ico")
+async def favicon():
+    """
+    Serves the favicon.ico file to browsers.
+    This route handles automatic browser requests for the tab icon.
+    The file must be located in the 'static/' directory and named 'favicon.ico'.
+    """
+    return FileResponse("static/favicon.ico")
+
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """
