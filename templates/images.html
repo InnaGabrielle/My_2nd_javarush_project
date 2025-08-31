@@ -4,14 +4,72 @@
     <meta charset="UTF-8">
     <title>Uploaded Images</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: 20px auto;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {background-color: #f9f9f9;}
+        .back-button {
+            display: inline-block;
+            margin: 20px;
+            text-decoration: none;
+            padding: 6px 12px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Uploaded Images</h2>
-    <ul>
-        {% for file in images %}
-        <li><a href="/images/{{ file }}" target="_blank">{{ file }}</a></li>
-        {% endfor %}
-    </ul>
-    <a href="/" class="back-button">← Back to Home</a>
+    <h2 style="text-align:center;">Uploaded Images</h2>
+
+    {% if images %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Preview</th>
+                    <th>Original Name</th>
+                    <th>Stored Filename</th>
+                    <th>Size (KB)</th>
+                    <th>Uploaded At</th>
+                    <th>File Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for img in images %}
+                <tr>
+                    <td>{{ img.id }}</td>
+                    <td>
+                        <a href="/images/{{ img.filename }}" target="_blank">
+                            <img src="/images/{{ img.filename }}" alt="{{ img.original_name }}" style="max-height:50px;">
+                        </a>
+                    </td>
+                    <td>{{ img.original_name }}</td>
+                    <td>{{ img.filename }}</td>
+                    <td>{{ (img.size / 1024) | round(1) }}</td>
+                    <td>{{ img.upload_time.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                    <td>{{ img.file_type }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align:center;">No images uploaded yet.</p>
+    {% endif %}
+
+    <div style="text-align:center;">
+        <a href="/" class="back-button">← Back to Home</a>
+    </div>
 </body>
 </html>
