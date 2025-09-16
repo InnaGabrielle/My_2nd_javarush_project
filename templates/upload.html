@@ -7,15 +7,24 @@
 <body>
     <h1>Upload picture</h1>
     <ul>
-        <li><a href="/upload">Picture upload</a></li>
-        <li><a href="/images">View picture</a></li>
+        <li><a href="/upload/">Picture upload</a></li>
+        <li><a href="/images-list">View picture</a></li>
     </ul>
 
-<form action="/upload/" enctype="multipart/form-data" method="post">
-    <input type="file" name="file" accept="jpg, jpeg, gif, png" required>
-    <br>
-    <input type="submit" value="Upload">
-</form>
+    <!-- Upload-Formular -->
+    <form action="/upload/" enctype="multipart/form-data" method="post">
+        <input type="file" name="file" accept="jpg, jpeg, gif, png" required>
+        <br>
+        <input type="submit" value="Upload">
+    </form>
+
+    <!-- Feedback after Upload -->
+    {% if message %}
+        <p style="color: green; font-weight: bold;">
+            {{ message }}
+        </p>
+    {% endif %}
+
     <a href="/" class="back-button">← Back to Home</a>
 </body>
 </html>
