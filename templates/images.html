@@ -19,14 +19,20 @@
             background-color: #f2f2f2;
         }
         tr:hover {background-color: #f9f9f9;}
-        .back-button {
+        .back-button, .delete-button {
             display: inline-block;
-            margin: 20px;
+            margin: 5px;
             text-decoration: none;
             padding: 6px 12px;
+            border-radius: 5px;
+        }
+        .back-button {
             background-color: #007bff;
             color: white;
-            border-radius: 5px;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
         }
     </style>
 </head>
@@ -44,6 +50,7 @@
                     <th>Size (KB)</th>
                     <th>Uploaded At</th>
                     <th>File Type</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,6 +67,9 @@
                     <td>{{ (img.size / 1024) | round(1) }}</td>
                     <td>{{ img.upload_time.strftime("%Y-%m-%d %H:%M:%S") }}</td>
                     <td>{{ img.file_type }}</td>
+                    <td>
+                        <a href="/delete/{{ img.filename }}" class="delete-button">Delete</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
