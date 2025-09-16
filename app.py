@@ -2,14 +2,14 @@ from datetime import datetime  # <— wichtig: Klassenimport!
 import logging
 import os
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 from pathlib import Path
 from dotenv import load_dotenv
 from utils.file_utils import get_unique_name, file_validation
-from db import connect_db, close_db, create_table_db, save_image, get_all_images
+from db import connect_db, close_db, create_table_db, save_image, get_all_images, delete_image
 from contextlib import asynccontextmanager
 
 load_dotenv()
@@ -48,27 +48,52 @@ logging.basicConfig(
 async def favicon():
     return FileResponse("static/favicon.ico")
 
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.get("/upload/", response_class=HTMLResponse)
 async def upload_image(request: Request):
     return templates.TemplateResponse("upload.html", {"request": request})
+
+
+@app.get("/delete/{filename}", response_class=HTMLResponse)
+async def delete_image_view(request: Request, filename: str):
+    """
+    FastAPI route to delete an image record by filename
+    :param request: the incoming HTTP request
+    :param filename: the filename to delete from the DB
+    :return: TemplateResponse: rendered html template after deletion
+    """
+    # Delete DB Record
+    delete_image(filename)
+
+    # Delete from filesystem
+    file_path = os.path.join(IMAGES_PATH, filename)
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+            logging.info(f"[FS] File {file_path} has been deleted.")
+        except Exception as e:
+            logging.error(f"[FS] Error deleting file {file_path}: {e}")
+    return RedirectResponse(url="/images-list/", status_code=303)
+
 
 @app.post("/upload/")
 async def upload_img(request: Request, file: UploadFile = File(...)):
     file_name = Path(file.filename)
     logging.info(f"File received: {file_name}")
 
-    # 1) Validierung
+    # 1) Validation
     try:
         content = await file_validation(file, ALLOWED_EXTENSIONS)
     except HTTPException as e:
         logging.error(f"Upload failed for {file_name}: {e.detail}")
         return templates.TemplateResponse("error.html", {"request": request, "message": e.detail}, status_code=e.status_code)
 
-    # 2) Speichern
+    # 2) Save
     new_file_name = get_unique_name(file_name)
     image_dir = Path(IMAGES_PATH)
     image_dir.mkdir(exist_ok=True)
@@ -76,7 +101,7 @@ async def upload_img(request: Request, file: UploadFile = File(...)):
     save_path.write_bytes(content)
     logging.info(f"File saved as: {save_path}")
 
-    # 3) Metadaten
+    # 3) Metadata
     size = save_path.stat().st_size
     file_type = file.content_type or "unknown"
     upload_time = datetime.now()
@@ -95,19 +120,16 @@ async def upload_img(request: Request, file: UploadFile = File(...)):
         logging.error(f"DB insert failed for {new_file_name}: {e}")
         raise HTTPException(status_code=500, detail="Database insert failed")
 
-    return {
-        "status": "ok",
-        "message": f"File {file.filename} saved as {new_file_name}",
-        "db_record": {
-            "filename": new_file_name,
-            "original_name": file_name.name,
-            "size": size,
-            "file_type": file_type,
-            "upload_time": upload_time.strftime("%Y-%m-%d %H:%M:%S")
+    return templates.TemplateResponse(
+        "upload.html",
+        {
+            "request": request,
+            "message": f"File {file.filename} successfully uploaded."
         }
-    }
+    )
 
-@app.get("/images/", response_class=HTMLResponse)
+
+@app.get("/images-list/", response_class=HTMLResponse)
 async def list_uploaded_images(request: Request):
     images = get_all_images()
     return templates.TemplateResponse("images.html", {"request": request, "images": images})
