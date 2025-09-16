@@ -67,6 +67,31 @@ def save_image(filename, original_name, size, file_type, upload_time=None):
     close_db(conn)
     logger.info(f"[DB] Metadata for {filename} inserted.")
 
+
+def delete_image(filename: str):
+    """
+    Delete an image record from the database by filename.
+    :param filename: The name of the file to be deleted from the `images` table.
+    :return: None
+    """
+    conn = connect_db()
+    if not conn:
+        return
+    try:
+        cur = conn.cursor()
+        sql = """DELETE FROM images WHERE filename = %s;"""
+        cur.execute(sql, (filename,))
+        conn.commit()
+        logger.info(f"[DB] File {filename} has been deleted.")
+    except Exception as e:
+        logger.error(f"[DB] Error deleting file {filename}: {e}.")
+        conn.rollback()
+    finally:
+        cur.close()
+        close_db(conn)
+
+
+
 def get_all_images():
     conn = connect_db()
     if not conn:
