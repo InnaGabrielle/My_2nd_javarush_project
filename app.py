@@ -1,7 +1,9 @@
 from datetime import datetime  # <— wichtig: Klassenimport!
 import logging
 import os
-from fastapi import FastAPI, Request, UploadFile, File, HTTPException
+from math import ceil
+
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Query
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -9,7 +11,7 @@ import uvicorn
 from pathlib import Path
 from dotenv import load_dotenv
 from utils.file_utils import get_unique_name, file_validation
-from db import connect_db, close_db, create_table_db, save_image, get_all_images, delete_image
+from db import connect_db, close_db, create_table_db, save_image, delete_image, count_images, get_images_page
 from contextlib import asynccontextmanager
 
 load_dotenv()
@@ -129,10 +131,38 @@ async def upload_img(request: Request, file: UploadFile = File(...)):
     )
 
 
+PER_PAGE = 10
+
 @app.get("/images-list/", response_class=HTMLResponse)
-async def list_uploaded_images(request: Request):
-    images = get_all_images()
-    return templates.TemplateResponse("images.html", {"request": request, "images": images})
+async def list_uploaded_images(
+    request: Request,
+    page: int = Query(1, ge=1)):
+    conn = connect_db()
+
+    total = count_images(conn)
+    logging.info(f"Total number of images: {total}")
+    total_pages = max(1, ceil(total / PER_PAGE))
+
+    page = min(page, total_pages)
+
+    # OFFSET
+    offset = (page - 1) * PER_PAGE
+
+    images = get_images_page(conn, PER_PAGE, offset)
+
+    close_db(conn)
+
+    return templates.TemplateResponse(
+        "images.html",
+        {
+            "request": request,
+            "images": images,
+            "page": page,
+            "total_pages": total_pages,
+            "per_page": PER_PAGE,
+            "total": total,
+        },
+    )
 
 @app.get("/images-list/{file_name}")
 async def serve_image(file_name: str):

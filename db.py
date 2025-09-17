@@ -113,3 +113,34 @@ def get_all_images():
         }
         for r in rows
     ]
+
+def count_images(conn):
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM images;")
+    total = cur.fetchone()[0]
+    cur.close()
+    return total
+
+def get_images_page(conn, limit: int, offset: int):
+    cur = conn.cursor()
+    sql = """
+        SELECT id, filename, original_name, size, file_type, upload_time
+        FROM images
+        ORDER BY upload_time DESC
+        LIMIT %s OFFSET %s;
+    """
+    cur.execute(sql, (limit, offset))
+    rows = cur.fetchall()
+    cur.close()
+    images = [
+        {
+            "id": r[0],
+            "filename": r[1],
+            "original_name": r[2],
+            "size": r[3],
+            "file_type": r[4],
+            "upload_time": r[5],
+        }
+        for r in rows
+    ]
+    return images

@@ -19,7 +19,7 @@
             background-color: #f2f2f2;
         }
         tr:hover {background-color: #f9f9f9;}
-        .back-button, .delete-button {
+        .back-button, .delete-button, .page-button {
             display: inline-block;
             margin: 5px;
             text-decoration: none;
@@ -33,6 +33,14 @@
         .delete-button {
             background-color: #dc3545;
             color: white;
+        }
+        .page-button {
+            background-color: #6c757d;
+            color: white;
+        }
+        .page-button.active {
+            background-color: #28a745;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -74,6 +82,21 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div style="text-align:center; margin-top:20px;">
+          {% if page > 1 %}
+            <a href="/images-list?page={{ page - 1 }}" class="page-button">← Previous</a>
+          {% endif %}
+
+          <span>Page {{ page }} of {{ total_pages }}</span>
+
+          {% if page < total_pages %}
+            <a href="/images-list?page={{ page + 1 }}" class="page-button">Next →</a>
+          {% endif %}
+        </div>
+        {% endif %}
     {% else %}
         <p style="text-align:center;">No images uploaded yet.</p>
     {% endif %}
