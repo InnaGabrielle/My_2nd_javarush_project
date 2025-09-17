@@ -134,7 +134,7 @@ async def list_uploaded_images(request: Request):
     images = get_all_images()
     return templates.TemplateResponse("images.html", {"request": request, "images": images})
 
-@app.get("/images/{file_name}")
+@app.get("/images-list/{file_name}")
 async def serve_image(file_name: str):
     file_path = Path(IMAGES_PATH) / file_name
     if not file_path.exists():
