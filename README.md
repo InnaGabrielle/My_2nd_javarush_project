@@ -10,6 +10,10 @@ An image server built with FastAPI. It allows image uploads, displays uploaded i
 - Logging of all actions in a readable format
 - Error handling for invalid file types
 - Automatic favicon handling
+- Image metadata is stored in a PostgreSQL database 
+- Paginated gallery view (10 images per page) with navigation buttons 
+- Delete functionality (removes both database record and physical file)
+- Database administration with pgAdmin included in Docker Compose
 
 ## Requirements
 
@@ -20,11 +24,26 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+## Database setup
+You need a running PostgreSQL instance. Configure connection details via environment variables:
+
+DB_NAME
+DB_USER
+DB_PASSWORD
+DB_HOST
+DB_PORT
+
+Run the following once to create the images table:
+
+```bash
+python -c "from app import create_table_db; create_table_db()"
+```
 
 ## Project Structure
 My_2nd_javarush_project/
 │
 ├── app.py                  # Main FastAPI application
+├── db.py                   # Database helper functions
 ├── templates/              # HTML templates
 ├── static/                 # Static files (e.g. favicon.ico, styles.css)
 ├── images/                 # Directory for uploaded images
@@ -58,6 +77,8 @@ The project includes a `docker-compose.yml` file with two services:
 
 - `app`: The FastAPI image server
 - `nginx`: A reverse proxy that forwards requests to the app
+- `db`: PostgreSQL database for image metadata
+- `pgadmin`: Web UI for managing the database
 
 ### 1. Build and start the services
 ```bash
@@ -65,15 +86,18 @@ docker compose up --build
 ```
 This will:
 
--Build the FastAPI app container
--Start both the app and Nginx
+- Build the FastAPI app container
+- Start the PostgreSQL database and pgAdmin
+- Start both the app and Nginx
 - Expose the app at http://localhost:8080
 
 ### 2. Configuration overview
-| Service | Role          | Port            | Description                       |
-| ------- | ------------- | --------------- | --------------------------------- |
-| app     | FastAPI app   | 8000 (internal) | Serves the backend API            |
-| nginx   | Reverse proxy | 80 (host)       | Forwards to app and serves static |
+| Service | Role             | Port            | Description                       |
+|---------|------------------|-----------------| --------------------------------- |
+| app     | FastAPI app      | 8000 (internal) | Serves the backend API            |
+| nginx   | Reverse proxy    | 80 (host)       | Forwards to app and serves static |
+| db      | PostgreSQL DB    | 5432 (internal) | Stores image metadata such as filename, original name, size, type, timestamp |
+| pgadmin | DB management UI | 5050 (host)     | Web interface for managing the PostgreSQL database (tables, queries, users) |
 
 ### 3.Stopping the services
 ```bash
