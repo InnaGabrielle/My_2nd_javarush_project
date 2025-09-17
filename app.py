@@ -48,16 +48,30 @@ logging.basicConfig(
 
 @app.get("/favicon.ico")
 async def favicon():
+    """
+    Serve the website's favicon.
+    :return:
+    """
     return FileResponse("static/favicon.ico")
 
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    """
+    Render the homepage.
+    :param request: FastAPI request object required for template rendering.
+    :return:  TemplateResponse: Renders the 'index.html' template as the root page.
+    """
     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/upload/", response_class=HTMLResponse)
 async def upload_image(request: Request):
+    """
+     Render the upload page for submitting new images.
+    :param request:
+    :return:
+    """
     return templates.TemplateResponse("upload.html", {"request": request})
 
 
@@ -85,6 +99,18 @@ async def delete_image_view(request: Request, filename: str):
 
 @app.post("/upload/")
 async def upload_img(request: Request, file: UploadFile = File(...)):
+    """
+    Handle file upload, validate content, store the file, and save metadata.
+    Workflow:
+        1. Validate the uploaded file against allowed extensions.
+        2. Save the file with a unique name in the images directory.
+        3. Collect metadata (size, type, upload time).
+        4. Insert metadata into the database.
+        5. Render a confirmation template or an error template on failure.
+    :param request: FastAPI request object required for template rendering
+    :param file: File object provided by the client.
+    :return: TemplateResponse: Renders an HTML template indicating success or error.
+    """
     file_name = Path(file.filename)
     logging.info(f"File received: {file_name}")
 
@@ -137,6 +163,13 @@ PER_PAGE = 10
 async def list_uploaded_images(
     request: Request,
     page: int = Query(1, ge=1)):
+    """
+    Render the uploaded images list as an HTML table with pagination.
+    :param request: FastAPI request object (needed for template rendering).
+    :param page: Page number requested by the client. Defaults to 1.
+    :return: TemplateResponse: Renders 'images.html' with the paginated image list,
+        total page count, and navigation links.
+    """
     conn = connect_db()
 
     total = count_images(conn)
@@ -166,6 +199,11 @@ async def list_uploaded_images(
 
 @app.get("/images-list/{file_name}")
 async def serve_image(file_name: str):
+    """
+    Serve a stored image file directly in the browser.
+    :param file_name:  Filename of the image to retrieve.
+    :return: FileResponse: The requested image file.
+    """
     file_path = Path(IMAGES_PATH) / file_name
     if not file_path.exists():
         logging.warning(f"Image not found: {file_name}")

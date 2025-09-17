@@ -12,6 +12,9 @@ DB_PORT = 5432
 logger = logging.getLogger(__name__)
 
 def connect_db():
+    """
+    Establish a connection to the PostgreSQL database.
+    """
     try:
         conn = psycopg2.connect(
             dbname=DB_NAME,
@@ -26,10 +29,16 @@ def connect_db():
         return None
 
 def close_db(conn):
+    """
+    Safely close an active database connection.
+    """
     if conn:
         conn.close()
 
 def create_table_db():
+    """
+    Create the 'images' table if it does not already exist.
+    """
     conn = connect_db()
     if not conn:
         return
@@ -50,7 +59,17 @@ def create_table_db():
     close_db(conn)
     logger.info("[DB] Table 'images' checked/created")
 
-def save_image(filename, original_name, size, file_type, upload_time=None):
+def save_image(filename: str, original_name: str, size: int, file_type: str, upload_time=None):
+    """
+    Insert a new image record into the 'images' table.
+
+    :param filename: Stored filename on disk (unique name)
+    :param original_name: Original filename provided during upload.
+    :param size: File size in bytes.
+    :param file_type: type of the file.
+    :param upload_time: Time of upload. Defaults to current time
+    :return:
+    """
     conn = connect_db()
     if not conn:
         return
@@ -115,6 +134,11 @@ def get_all_images():
     ]
 
 def count_images(conn):
+    """
+    Count the total number of images stored in the database.
+    :param conn: Active database connection.
+    :return: Total number of images in the 'images' table
+    """
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM images;")
     total = cur.fetchone()[0]
@@ -122,6 +146,15 @@ def count_images(conn):
     return total
 
 def get_images_page(conn, limit: int, offset: int):
+    """
+    Fetch a paginated list of images from the database.
+    :param conn: Active database connection.
+    :param limit: Maximum number of records to fetch.
+    :param offset:  Number of records to skip before starting to return rows
+    :return: list[dict]: A list of dictionaries where each dictionary contains
+            the metadata of one image (id, filename, original_name,
+            size, file_type, upload_time).
+    """
     cur = conn.cursor()
     sql = """
         SELECT id, filename, original_name, size, file_type, upload_time
